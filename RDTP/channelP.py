@@ -1,19 +1,29 @@
 import socket
 import threading
+import time
 from collections import deque
+import configparser
 
-receiver_ip_addr = "127.0.0.1"
-receiver_port_number = 8000
+config = configparser.ConfigParser()
+config.read('../RDTP.conf')
 
-sender_ip_addr = "127.0.0.1"
-sender_port_number = 8080
+# get scenario
+path = "./scenario/" + config['DEFAULT']['channel_scenario_file'] + ".txt"
+scenario = open(path, "r").read()
 
-channel_ip_addr = "127.0.0.1"
-channel_port_number = 8001
-bufferSize = 1024
+receiver_ip_addr = config['DEFAULT']['receiver_ip_addr']
+receiver_port_number = int(config['DEFAULT']['receiver_port_number'])
 
-# Channel P rules
-scenario = "N4L1N3L2N2L1N*"  # example scenario
+channel_ip_addr = config['DEFAULT']['channel_ip_addr']
+channel_port_number = int(config['DEFAULT']['channel_port_number'])
+channel_address = (channel_ip_addr, channel_port_number)
+
+sender_ip_addr = config['DEFAULT']['sender_ip_addr']
+sender_port_number = int(config['DEFAULT']['sender_port_number'])
+buffer_size = 1024
+
+small_congestion_delay = int(config['DEFAULT']['channel_small_congestion_delay'])
+big_congestion_delay = int(config['DEFAULT']['channel_big_congestion_delay'])
 
 # Set up the socket
 UDPChannelSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -46,13 +56,14 @@ def apply_rule(packet, address):
         pass  # Packet is lost, do nothing
     elif rule == "N":  # Normal
         print("Packet normal", packet, address)
-        if address[1] == receiver_port_number:
-            UDPChannelSocket.sendto(packet, (sender_ip_addr, sender_port_number))
-        else:
-            UDPChannelSocket.sendto(packet, (receiver_ip_addr, receiver_port_number))
-    elif rule == "c":  # Corrupted
-        # TODO: Congeted packet ( time delay )
-        pass
+        send(address, packet)
+    elif rule == "c":  # small congestion
+        print("Packet small congestion", packet, address)
+        time.sleep(small_congestion_delay)
+        threading.Timer(small_congestion_delay, send, args=(address, packet)).start()
+    elif rule == "C":  # big congestion
+        print("Packet small congestion", packet, address)
+        threading.Timer(big_congestion_delay, send, args=(address, packet)).start()
 
     # Update the rule index
     rules[0][1] -= 1
@@ -60,9 +71,16 @@ def apply_rule(packet, address):
         rules.popleft()
 
 
+def send(address, packet):
+    if address[1] == receiver_port_number:
+        UDPChannelSocket.sendto(packet, (sender_ip_addr, sender_port_number))
+    else:
+        UDPChannelSocket.sendto(packet, (receiver_ip_addr, receiver_port_number))
+
+
 while True:
     print("Waiting for message...", rules)
-    data, addr = UDPChannelSocket.recvfrom(bufferSize)
+    data, addr = UDPChannelSocket.recvfrom(buffer_size)
     print("From:", addr, "Message:", data.decode())
     threading.Thread(target=apply_rule, args=(data, addr)).start()
 
