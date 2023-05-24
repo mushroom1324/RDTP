@@ -2,9 +2,10 @@ import socket
 import threading
 import time
 import tkinter as tk
+from colorama import Fore, Back, Style
 
 # TODO: Scenario file
-file = "128 1 40 3 10 2 121 2 23 4 20 1 30"
+file = "50 3 50 3 50 3 50 3 50 3 50 3 50 3 50 3"
 scenario = list(map(int, file.split(" ")))
 first = 0
 scenarios = []
@@ -19,6 +20,7 @@ while i < len(scenario) - 1:
 scenarios.append((scenario[i], 0))
 print(*scenarios)
 
+t = time.time()
 
 receiver_ip_addr = "127.0.0.1"
 receiver_port_number = 8000
@@ -80,10 +82,11 @@ canvas.pack()
 
 
 def draw_rectangles(sendbase, LastByteAcked, LastByteSent, LastByteWritten):
-    print("draw rectangles", sendbase, LastByteAcked, LastByteSent, LastByteWritten)
-    rect_width = 2
+
+    print(Fore.GREEN + "sendbase", sendbase, "LastByteAcked", LastByteAcked, "LastByteSent", LastByteSent, "LastByteWritten", LastByteWritten)
+
     for i in range(min(0, sendbase - 10), 512):
-        color = "black"
+        color = "white"
         if i <= sendbase:
             color = "grey"
         elif i <= LastByteAcked:
@@ -92,15 +95,14 @@ def draw_rectangles(sendbase, LastByteAcked, LastByteSent, LastByteWritten):
             color = "green"
         elif i <= LastByteWritten:
             color = "red"
-        canvas.create_rectangle(i * rect_width, 0, (i + 1) * rect_width, 200, fill=color)
+        elif i <= sendbase + 256:
+            color = "black"
+        canvas.create_rectangle(i * 2, 0, (i + 1) * 2, 200, fill=color)
 
 
 def update_canvas(sendbase, LastByteAcked, LastByteSent, LastByteWritten):
     canvas.delete("all")
     draw_rectangles(sendbase, LastByteAcked, LastByteSent, LastByteWritten)
-
-
-
 
 """
 
@@ -109,23 +111,28 @@ start receive
 """
 
 
-def send_message(NextSeqNum):
-    global AdvWindow, timer, LastByteSent, LastByteWritten, LastByteAcked, PrevByteAcked
+def send_message(NextSeqNum, length, Timeout=False):
+    if Timeout:
+        print(Fore.YELLOW + "Timeout event")
+    global AdvWindow, timer, LastByteSent, LastByteWritten, LastByteAcked, PrevByteAcked, t
+    print(Fore.BLUE + "Time", int(time.time() - t), "Segment size:", length)
 
-    if abs(NextSeqNum - LastByteWritten) > AdvWindow:
-        print("Not enough space from receiver buffer..", abs(NextSeqNum - LastByteWritten), ">", AdvWindow)
-        timer = threading.Timer(0.5, send_message, args=(NextSeqNum,))
+    if length > AdvWindow:
+        print(Fore.RESET + "Not enough space from receiver buffer..", abs(NextSeqNum - LastByteWritten), ">", AdvWindow)
+        timer = threading.Timer(0.5, send_message, args=(NextSeqNum, length))
         timer.start()
     else:
-        message = "SND(" + str(NextSeqNum) + ", " + str(window - sendbase) + ")"
-        print("To Receiver:", message)
+        message = "SND(" + str(NextSeqNum) + ", " + str(length) + ")"
+        print(Fore.RESET + "To Receiver:", message)
         UDPSenderSocket.sendto(message.encode(), channel_address)
-        LastByteSent += abs(NextSeqNum - LastByteWritten)
-        NextSeqNum += abs(NextSeqNum - LastByteWritten) - 1
-        AdvWindow -= abs(NextSeqNum - LastByteWritten)
+        LastByteSent += length
+        NextSeqNum += length
+        AdvWindow -= length
         # (3) timeout event
-        timer = threading.Timer(5, send_message, args=(NextSeqNum,))
+        timer = threading.Timer(5, send_message, args=(NextSeqNum, length, True))
         timer.start()
+
+
 
 
 def message_loop():
@@ -140,48 +147,48 @@ def message_loop():
 
         # check buffer size capacity
         if message > bufferSize:
-            print("Cannot send message more than 1024 bytes")
+            print(Fore.RESET + "Cannot send message more than 1024 bytes")
             message_index += 1
             continue
         elif window + message > bufferSize:
-            print("Not enough space from RDTP buffer.. waiting")
+            print(Fore.RESET + "Not enough space from RDTP buffer.. waiting")
+            time.sleep(0.5)
             continue
 
         # save message to window buffer
         window += message
         LastByteWritten += message
 
+        # (2) send message to receiver
+        # if NextSeqNum != LastByteWritten:  # which is always happens.. so just send message
+        send_message(NextSeqNum, message)
+
         # update canvas
         update_thread = threading.Thread(target=update_canvas, daemon=True, args=(sendbase, LastByteAcked, LastByteSent, LastByteWritten))
         update_thread.start()
-
-        # (2) send message to receiver
-        # if NextSeqNum != LastByteWritten:  # which is always happens.. so just send message
-        send_message(NextSeqNum)
 
         # (4) receive ACK from receiver
         bytesAddressPair = UDPSenderSocket.recvfrom(bufferSize)
         receivedMessage = bytesAddressPair[0].decode()[4:-1].split(", ")
 
-        print("From Receiver:", bytesAddressPair[1], "Message:", bytesAddressPair[0].decode())
+        print(Fore.RESET + "From Receiver:", bytesAddressPair[1], "Message:", bytesAddressPair[0].decode())
 
         AdvWindow = int(receivedMessage[1])  # set AdvWindow size
 
         if int(receivedMessage[0]) > sendbase:
             sendbase = int(receivedMessage[0])
             LastByteAcked = int(receivedMessage[0]) - 1
-            NextSeqNum = int(receivedMessage[0]) - 1
+
             if LastByteAcked != LastByteSent:
                 # TODO: regulate timer
-                print("timer regulation")
+                print(Fore.RESET + "timer regulation")
                 timer.cancel()
-                pass
             else:
                 timer.cancel()
 
-
         message_index += 1
         time.sleep(delay)
+
 
 
 message_thread = threading.Thread(target=message_loop)

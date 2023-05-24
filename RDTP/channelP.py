@@ -13,7 +13,7 @@ channel_port_number = 8001
 bufferSize = 1024
 
 # Channel P rules
-scenario = "N4L1N3L2N23c1N*"  # example scenario
+scenario = "N4L1N3L2N2L1N*"  # example scenario
 
 # Set up the socket
 UDPChannelSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
