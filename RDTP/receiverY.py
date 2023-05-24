@@ -9,14 +9,12 @@ channel_port_number = 8001
 sender_ip_addr = "127.0.0.1"
 sender_port_number = 8080
 
-applicationStorage = []
+applicationStorage = 0
 
 maxSequenceNumber = 1000
-bufferSize = 512
-currentBufferSize = bufferSize
-window = ""
+bufferSize = 256
+window = 0
 
-prevACK = ""
 rcvbase = 0
 LastByteRcvd = 0
 LastByteRead = 0
@@ -53,10 +51,11 @@ while True:
 
     # application read data
     if LastByteRcvd != LastByteRead:
-        applicationStorage.append(window[LastByteRead:LastByteRcvd])
-        rcvbase += len(window[LastByteRead:LastByteRcvd])
+        print("Application read data:", applicationStorage, rcvbase)
+        applicationStorage += window
+        rcvbase += window
         LastByteRead = LastByteRcvd
-
+        window = 0
 
     # receive message
     bytesAddressPair = UDPReceiverSocket.recvfrom(bufferSize)
@@ -64,18 +63,18 @@ while True:
     receivedMessage = bytesAddressPair[0].decode()[4:-1].split(", ")
 
     if int(receivedMessage[0]) == LastByteRcvd:
-        # message reveiced in order
-        currentBufferSize -= len(receivedMessage[1])
+        # message received in order
+        window += int(receivedMessage[1])
 
-        LastByteRcvd += len(receivedMessage[1])
-        sendMessage = "ACK(" + str(LastByteRcvd + 1) + ", " + str(currentBufferSize) + ")"
-        prevACK = sendMessage
+        LastByteRcvd += int(receivedMessage[1])
+        sendMessage = "ACK(" + str(LastByteRcvd + 1) + ", " + str(bufferSize - window) + ")"
         print("To Sender:", sendMessage)
         UDPReceiverSocket.sendto(sendMessage.encode(), bytesAddressPair[1])
     else:
         # discard segment that is out of order
         # resend ACK
-        print("To Sender (Retransmit):", prevACK)
-        UDPReceiverSocket.sendto(prevACK.encode(), bytesAddressPair[1])
+        sendMessage = "ACK(" + str(LastByteRcvd + 1) + ", " + str(bufferSize - window) + ")"
+        print("To Sender (Retransmit):", sendMessage)
+        UDPReceiverSocket.sendto(sendMessage.encode(), bytesAddressPair[1])
 
 
