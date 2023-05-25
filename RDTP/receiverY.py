@@ -5,12 +5,17 @@ import time
 import tkinter as tk
 from colorama import Fore
 
+
 config = configparser.ConfigParser()
 config.read('../RDTP.conf')
 
 # get scenario
 path = "./scenario/" + config['DEFAULT']['receiver_scenario_file'] + ".txt"
 file = open(path, "r").read()
+
+scenarios = list(map(int, file.split(" ")))
+
+
 
 receiver_ip_addr = config['DEFAULT']['receiver_ip_addr']
 receiver_port_number = int(config['DEFAULT']['receiver_port_number'])
@@ -87,10 +92,10 @@ def draw_rectangles(rcvbase, last_byte_rcvd, last_byte_read, window):
             color = "black"
         canvas.create_rectangle(i * 2, 0, (i + 1) * 2, 200, fill=color)
 
+
 def update_canvas(rcvbase, last_byte_rcvd, last_byte_read, window):
     canvas.delete("all")
     draw_rectangles(rcvbase, last_byte_rcvd, last_byte_read, window)
-
 
 
 """
@@ -99,10 +104,19 @@ receive message
 
 """
 
+
 def read_message():
     global rcvbase, last_byte_rcvd, last_byte_read, window, application_storage, root
 
+    index = 0
     while not stop_event.is_set():
+
+        # get delay from scenario
+        delay = scenarios[index]
+        index += 1
+        if index == len(scenarios):
+            index = 0
+
         # application read data
         if last_byte_rcvd != last_byte_read:
             application_storage += window
@@ -111,7 +125,7 @@ def read_message():
             window = 0
             print(Fore.BLUE + "Application storage:", application_storage)
 
-        time.sleep(1)
+        time.sleep(delay)
 
 
 def receive_message():
@@ -132,7 +146,8 @@ def receive_message():
             update_thread.start()
             # root.quit()
             stop_event.set()
-            time.sleep(2)
+            while last_byte_rcvd != last_byte_read:
+                time.sleep(1)
             print(Fore.GREEN + "Connection Finished")
             exit(0)
 

@@ -48,6 +48,22 @@ while i < len(scenario):
 
 
 def apply_rule(packet, address):
+    global rules
+
+    if not rules:
+        i = 0
+        while i < len(scenario):
+            first = scenario[i]
+            second = ""
+            i += 1
+            while i < len(scenario):
+                if scenario[i].isdigit():
+                    second += scenario[i]
+                else:
+                    break
+                i += 1
+            rules.append([first, int(second)])
+
     rule = rules[0][0]
 
     # Apply the rule
