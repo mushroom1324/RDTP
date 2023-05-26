@@ -99,7 +99,7 @@ def draw_rectangles(sendbase, last_byte_acked, last_byte_sent, last_byte_written
     for i in range(min(0, sendbase - 10), 512):
         color = "white"
         if i <= sendbase:
-            color = "grey"
+            color = "white"
         elif i <= last_byte_acked:  # which cannot happen..
             color = "blue"
         elif i <= last_byte_sent:
@@ -148,7 +148,16 @@ def send_message(sequence_number, length, is_timeout=False):
         return length
 
 
-def retransmit():
+def retransmit(fin=False):
+    global timer
+
+    if fin:
+        print("Time", int(time.time() - t), "Retransmitting FIN")
+        UDPSenderSocket.sendto("FIN".encode(), channel_address)
+        timer = threading.Timer(timeout_value, retransmit, (True,))
+        timer.start()
+        return
+
     for message, delay, is_acked in scenarios:
         if not is_acked:
             print(Fore.RED + "Time", int(time.time() - t), "Retransmitting", last_byte_acked + 1, "to", last_byte_acked + message)
@@ -200,6 +209,9 @@ def message_loop():
     stop_event.set()
     # send FIN message to receiver
     UDPSenderSocket.sendto("FIN".encode(), channel_address)
+    timer.cancel()
+    timer = threading.Timer(timeout_value, retransmit, args=(True,))
+    timer.start()
 
 
 def receive_ack():

@@ -47,44 +47,37 @@ while i < len(scenario):
     rules.append([first, int(second)])
 
 
+i = 0
+cnt = rules[0][1]
+
+
 def apply_rule(packet, address):
-    global rules
+    global rules, i, cnt
 
-    if not rules:
-        i = 0
-        while i < len(scenario):
-            first = scenario[i]
-            second = ""
-            i += 1
-            while i < len(scenario):
-                if scenario[i].isdigit():
-                    second += scenario[i]
-                else:
-                    break
-                i += 1
-            rules.append([first, int(second)])
-
-    rule = rules[0][0]
+    rule = rules[i][0]
 
     # Apply the rule
     if rule == "L":  # Loss
-        print("Packet lost", packet, address)
+        print("L", packet, address)
         pass  # Packet is lost, do nothing
     elif rule == "N":  # Normal
-        print("Packet normal", packet, address)
+        print("N", packet, address)
         send(address, packet)
     elif rule == "c":  # small congestion
-        print("Packet small congestion", packet, address)
+        print("c", packet, address)
         time.sleep(small_congestion_delay)
         threading.Timer(small_congestion_delay, send, args=(address, packet)).start()
     elif rule == "C":  # big congestion
-        print("Packet small congestion", packet, address)
+        print("C", packet, address)
         threading.Timer(big_congestion_delay, send, args=(address, packet)).start()
 
     # Update the rule index
-    rules[0][1] -= 1
-    if rules[0][1] == 0:
-        rules.popleft()
+    cnt -= 1
+    if cnt == 0:
+        i += 1
+        if i == len(rules):
+            i = 0
+        cnt = rules[i][1]
 
 
 def send(address, packet):
@@ -95,7 +88,7 @@ def send(address, packet):
 
 
 while True:
-    print("Waiting for message...", rules)
+    print("Waiting for message... rule:", rules[i][0], "cnt:", cnt)
     data, addr = UDPChannelSocket.recvfrom(buffer_size)
     print("From:", addr, "Message:", data.decode())
     threading.Thread(target=apply_rule, args=(data, addr)).start()

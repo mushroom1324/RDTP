@@ -83,7 +83,7 @@ def draw_rectangles(rcvbase, last_byte_rcvd, last_byte_read, window):
     for i in range(min(0, rcvbase - 10), 512):
         color = "white"
         if i <= rcvbase:
-            color = "grey"
+            color = "white"
         elif i <= last_byte_rcvd:  # which cannot happen..
             color = "blue"
         elif i <= last_byte_read:
@@ -173,6 +173,10 @@ def receive_message():
                                          args=(rcvbase, last_byte_rcvd, last_byte_read, window))
         update_thread.start()
 
+
+update_thread = threading.Thread(target=update_canvas, daemon=True,
+                                 args=(rcvbase, last_byte_rcvd, last_byte_read, window))
+update_thread.start()
 
 # read message thread
 read_thread = threading.Thread(target=read_message, daemon=True)
