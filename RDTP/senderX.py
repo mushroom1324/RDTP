@@ -176,7 +176,7 @@ def message_loop():
             # (1) get input message
             message, delay, is_acked = scenarios[message_index]
             # check buffer size capacity
-            if window + message > window_size:
+            if last_byte_written - sendbase + message > window_size:
                 print(Fore.BLACK + "Not enough space from sender buffer.. waiting")
                 time.sleep(0.5)
                 continue
