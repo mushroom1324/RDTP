@@ -22,6 +22,7 @@ sender_ip_addr = config['DEFAULT']['sender_ip_addr']
 sender_port_number = int(config['DEFAULT']['sender_port_number'])
 buffer_size = 1024
 
+channel_latency = float(config['DEFAULT']['channel_latency'])
 small_congestion_delay = int(config['DEFAULT']['channel_small_congestion_delay'])
 big_congestion_delay = int(config['DEFAULT']['channel_big_congestion_delay'])
 
@@ -62,7 +63,7 @@ def apply_rule(packet, address):
         pass  # Packet is lost, do nothing
     elif rule == "N":  # Normal
         print("N", packet, address)
-        send(address, packet)
+        threading.Timer(channel_latency, send, args=(address, packet)).start()
     elif rule == "c":  # small congestion
         print("c", packet, address)
         threading.Timer(small_congestion_delay, send, args=(address, packet)).start()
