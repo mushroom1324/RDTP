@@ -34,6 +34,18 @@
   - sender X는 실행하는 즉시 channel P를 통해 receiver Y로 세그멘트를 전송한다. (연결 설정 시작)
   - receiver Y는 세그멘트를 받을 준비가 되어있어야 한다.
 
+# 구현
+
+- 언어 : Python3
+- read, send, receive, update_canvas 등의 개별적인 event가 병렬적으로 실행되어야 한다.
+  - Threading을 이용하여 구현
+- UDP Transfer를 기반으로 한다.
+  - Socket을 이용하여 구현
+- GUI로 window를 display한다.
+  - tkinter를 이용하여 구현
+- Console logging의 가시성 추가
+  - colorama을 이용해 구현
+  
 # Description
 
 - RDTP는 신뢰성을 보장하는 Datagram 전송 프로토콜이다.
@@ -212,3 +224,27 @@ def receive_message():
   - last_byte_read ~ window_size: 회색
   - window_size 이상: 하얀색
 
+# RDTP.conf
+- 환경 변수들을 정의한다.
+```text
+# 주석: RDTP.conf - 2023 컴퓨터네트워크 프로그래밍 과제 configuration file
+[DEFAULT]
+sender_ip_addr = 127.0.0.1
+sender_port_number = 8080
+sender_window_size = 256
+sender_init_seq_no = 0
+sender_timeout_value = 6
+sender_scenario_file = sender_scenario
+
+receiver_ip_addr = 127.0.0.1
+receiver_port_number = 8000
+receiver_window_size = 170
+receiver_scenario_file = receiver_scenario
+
+channel_ip_addr = 127.0.0.1
+channel_port_number = 8001
+channel_scenario_file = channel_scenario
+channel_latency = 0.1
+channel_small_congestion_delay = 4
+channel_big_congestion_delay = 6
+```
