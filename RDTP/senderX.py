@@ -70,8 +70,8 @@ UDPSenderSocket.sendto(initial_msg.encode(), channel_address)
 message, receiverAddress = UDPSenderSocket.recvfrom(window_size)
 
 print("From Receiver:", receiverAddress, "Message:", message.decode())
-message = message.decode()[1:-1].split(", ")
-
+message = message.decode()[4:-1].split(", ")
+next_sequence_number = int(message[0])
 # Set initial AdvWindow
 adv_window = int(message[1])
 
@@ -141,7 +141,7 @@ def send_message(sequence_number, length, is_timeout=False):
         last_byte_sent += length
         adv_window -= length
 
-    M[sequence_number] = [length, time.time()]
+    M[last_byte_sent] = [length, time.time()]
     if is_timeout:
         return 0
     else:
@@ -248,7 +248,9 @@ def receive_ack():
             if last_byte_acked != last_byte_sent:
                 # change timer to new one
                 timer.cancel()
-                timer = threading.Timer(timeout_value - int(time.time() - M[last_byte_acked][1]), retransmit)
+                timeout_value -= int(time.time() - M[last_byte_sent][1])
+                print(Fore.RESET + "Time", int(time.time() - t), "New timer", timeout_value)
+                timer = threading.Timer(timeout_value - int(time.time() - M[last_byte_sent][1]), retransmit)
                 timer.start()
 
             else:

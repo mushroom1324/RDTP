@@ -65,7 +65,6 @@ def apply_rule(packet, address):
         send(address, packet)
     elif rule == "c":  # small congestion
         print("c", packet, address)
-        time.sleep(small_congestion_delay)
         threading.Timer(small_congestion_delay, send, args=(address, packet)).start()
     elif rule == "C":  # big congestion
         print("C", packet, address)
