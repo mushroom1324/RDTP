@@ -94,7 +94,7 @@ canvas.pack()
 
 def draw_rectangles(sendbase, last_byte_acked, last_byte_sent, last_byte_written):
 
-    print(Fore.GREEN + "sendbase", sendbase, "LastByteAcked", last_byte_acked, "LastByteSent", last_byte_sent, "LastByteWritten", last_byte_written)
+    print(Fore.GREEN + "Time", int(time.time() - t), "sendbase", sendbase, "LastByteAcked", last_byte_acked, "LastByteSent", last_byte_sent, "LastByteWritten", last_byte_written)
 
     for i in range(min(0, sendbase - 10), 512):
         color = "white"

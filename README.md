@@ -208,7 +208,7 @@ def receive_message():
 - 전송 시 Time, segment size, sequence number를 console에 표시한다. (파란색)
 - 가시성을 위해 tkinter를 이용해 GUI를 구현하였다.
   - sendbase 이하: 하얀색
-  - sendbase ~ last_byte_acked: 파란색
+  - sendbase ~ last_byte_acked: 파란색 (사실 ack을 받으면 바로 sendbase를 업데이트 하기에 파란색을 볼 일이 없다..)
   - last_byte_acked ~ last_byte_sent: 초록색
   - last_byte_sent ~ last_byte_written: 빨간색
   - last_byte_written ~ window_size: 회색
@@ -219,9 +219,9 @@ def receive_message():
 - Application Read event마다 저장된 메세지 용량을 표시한다. (파란색)
 - 가시성을 위해 tkinter를 이용해 GUI를 구현하였다.
   - rcvbase 이하: 하얀색
-  - rcvbase ~ last_byte_rcvd: 파란색
-  - last_byte_rcvd ~ last_byte_read: 초록색
-  - last_byte_read ~ window_size: 회색
+  - rcvbase ~ last_byte_read: 초록색 (사실 읽으면 바로 rcvbase를 업데이트 하기에 초록색을 볼 일이 없다..)
+  - last_byte_read ~ last_byte_rcvd: 파란색 
+  - last_byte_rcvd ~ window_size: 회색
   - window_size 이상: 하얀색
 
 # RDTP.conf
