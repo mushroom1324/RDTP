@@ -69,10 +69,12 @@
 - 읽기에 성공하면 send_message를 **최초 시도**한다.
 
 #### Receiver Y에게 메세지 전송
-- `SND(next_sequence_number, length)`의 형태로 보낸다.
-  - next_sequence_number : 보내는 세그먼트의 시작 번호
-  - length(message) : 보내는 세그먼트의 길이
-- 보내면서 next_sequence_number를 길이만큼 증가시킨다.
+- `send_message` 함수를 통해 전송한다.
+  - sequence_number, length, is_timeout을 인자로 받는다.
+  - `SND(next_sequence_number, length)`의 형태로 보낸다.
+    - next_sequence_number : 보내는 세그먼트의 시작 번호
+    - length(message) : 보내는 세그먼트의 길이
+  - 보내면서 next_sequence_number를 길이만큼 증가시킨다.
 
 #### Receiver Y로부터 ACK 수신
 - `ACK(y, w)`의 형태로 수신한다.
