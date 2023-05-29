@@ -1,6 +1,14 @@
-1.
+# 1.
 3 1 5 2 1 3 2 4 3 5 5 6 2 7
-2.
+# 2. sender packet loss
 3 1 5 2 1 3 2 4 3 5 5 6 2 7
-3.
+# 3. receiver packet loss ( normal )
 3 1 5 2 1 3 2 4 3 5 5 6 2 7
+# 4. big congestion dealy on sender packet
+3 1 5 2 1 3 2 4 3 5 5 6 2 7
+# 5. packets delivered out of order
+3 1 5 2 1 3 2 4 3 5 5 6 2 7
+# 6. channel always congested
+3 1 5 2 1 3 2 4 3 5 5 6 2 7
+# 7. receiver malfunction
+999999999999999

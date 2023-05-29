@@ -124,6 +124,13 @@ def read_message():
             last_byte_read = last_byte_rcvd
             window = 0
             print(Fore.BLUE + "Application storage:", application_storage)
+            sendMessage = "ACK(" + str(last_byte_rcvd + 1) + ", " + str(window_size - window) + ")"
+            print(Fore.RESET + "To Sender:", sendMessage)
+            UDPReceiverSocket.sendto(sendMessage.encode(), senderAddressPort)
+            # update canvas
+            update_thread = threading.Thread(target=update_canvas, daemon=True,
+                                             args=(rcvbase, last_byte_rcvd, last_byte_read, window))
+            update_thread.start()
 
         time.sleep(delay)
 
@@ -145,7 +152,7 @@ def receive_message():
                                              args=(rcvbase, last_byte_rcvd, last_byte_read, window))
             update_thread.start()
             # root.quit()
-            stop_event.set()
+            # stop_event.set()
             while last_byte_rcvd != last_byte_read:
                 time.sleep(1)
             print(Fore.GREEN + "Connection Finished")

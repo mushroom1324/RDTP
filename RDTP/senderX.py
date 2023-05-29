@@ -141,7 +141,7 @@ def send_message(sequence_number, length, is_timeout=False):
         last_byte_sent += length
         adv_window -= length
 
-    M[last_byte_sent] = [length, time.time()]
+    M[last_byte_sent] = [length, int(time.time() - t)]
     if is_timeout:
         return 0
     else:
@@ -248,9 +248,8 @@ def receive_ack():
             if last_byte_acked != last_byte_sent:
                 # change timer to new one
                 timer.cancel()
-                timeout_value -= int(time.time() - M[last_byte_sent][1])
-                print(Fore.RESET + "Time", int(time.time() - t), "New timer", timeout_value)
-                timer = threading.Timer(timeout_value - int(time.time() - M[last_byte_sent][1]), retransmit)
+                print(Fore.CYAN + "Time", int(time.time() - t), "New timer", timeout_value - int(time.time() - t) - M[last_byte_acked - 1][1])
+                timer = threading.Timer(timeout_value - int(time.time() - t) - M[last_byte_acked - 1][1], retransmit)
                 timer.start()
 
             else:

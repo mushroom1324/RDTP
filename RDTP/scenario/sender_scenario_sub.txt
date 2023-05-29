@@ -1,6 +1,14 @@
-1.
+# 1.
 50 1 50 3 120 2 50 2 50
-2.
-50 1 50 1 50 1 50 1 50 1 50 1
-3. sender packet loss
-120 1 120 1 120 1 120 1 120 1 120 1
+# 2. sender packet loss
+120 2 120 2 120 2 50
+# 3. receiver packet loss ( normal )
+50 2 50 2 50 2 50 2 50 2 50 2
+# 4. big congestion dealy on sender packet
+50 2 50 2 50 2 50 2 50 2 50
+# 5. packets delivered out of order
+50 2 50 2 50 2 50 2 50 2 50
+# 6. channel always congested
+50 2 50 2 50 2 50 2 50 2 50
+# 7. receiver malfunction
+50 2 50 2 50 2 50 2 50 2 50
