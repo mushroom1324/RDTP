@@ -1,0 +1,6 @@
+1.
+N3c1N2L1C1N4L1N*
+2. time regulation
+N2N1c1N1L3N*
+3. sender packet loss
+N2L1N*

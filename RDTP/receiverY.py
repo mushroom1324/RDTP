@@ -157,10 +157,10 @@ def receive_message():
             # message received in order
 
             last_byte_rcvd += int(receivedMessage[1])
+            window += int(receivedMessage[1])
             sendMessage = "ACK(" + str(last_byte_rcvd + 1) + ", " + str(window_size - window) + ")"
             print(Fore.RESET + "To Sender:", sendMessage)
             UDPReceiverSocket.sendto(sendMessage.encode(), bytesAddressPair[1])
-            window += int(receivedMessage[1])
         else:
             # discard segment that is out of order
             # resend ACK
